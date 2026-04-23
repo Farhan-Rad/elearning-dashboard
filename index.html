@@ -253,6 +253,25 @@ input[type=radio]{ margin-right:6px; }
   .badge-grid{ grid-template-columns:1fr 1fr; }
   .content{ padding:20px; }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sdiebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px;
+  }
+  .sidebar h2 { display: none;}
+  .sidebar button { width: auto; padding: 8px 12px; font-size: 11px; }
+  .wrapper { flex-direction: column; }
+  .content { padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .materi-grid { grid-template-columns: 1fr; }
+  .badge-grid { grid-template-columns: 1fr 1fr; }
+  .login-card {width: 100%;}
+}
 </style>
 </head>
 
