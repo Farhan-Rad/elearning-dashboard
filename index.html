@@ -243,18 +243,6 @@ input[type=text]::placeholder{ color:rgba(255,255,255,.35); }
 input[type=radio]{ margin-right:6px; }
 
 /* ===== RESPONSIVE ===== */
-@media(max-width:768px){
-  .wrapper{ flex-direction:column; }
-  .sidebar{ width:100%; flex-direction:row; flex-wrap:wrap; gap:6px; padding:14px; }
-  .sidebar h2{ width:100%; text-align:left; }
-  .sidebar button,.theme-btn{ width:auto; flex:1; min-width:120px; }
-  .stats-grid{ grid-template-columns:1fr 1fr; }
-  .materi-grid{ grid-template-columns:1fr; }
-  .badge-grid{ grid-template-columns:1fr 1fr; }
-  .content{ padding:20px; }
-}
-
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .sdiebar {
     width: 100%;
@@ -272,6 +260,47 @@ input[type=radio]{ margin-right:6px; }
   .badge-grid { grid-template-columns: 1fr 1fr; }
   .login-card {width: 100%;}
 }
+
+/* ===== ANIMASI ===== */
+.card{
+  transition: transform .3s, box-shadow .3s, background .3s;
+}
+.card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(127,124,255,0.3);
+}
+
+.materi-item{
+  transition: transform .3s, border-color .3s;
+}
+.materi-item:hover{
+  transform: translateY(-3px);
+  border-color: #7f7cff;
+}
+
+.badge-box{
+  transition: transform .3s, border .3s, background .3s;
+}
+.badge-box:hover{
+  transform: scale(1.05);
+}
+
+.stat-box{
+  transition: transform .3s, box-shadow .3s;
+}
+.stat-box:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(93,220,255,0.25);
+}
+
+@keyframes fadeInUp{
+  from{ opacity:0; transform:translateY(20px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.page.active{
+  animation: fadeInUp .4s ease;
+}
+
 </style>
 </head>
 
