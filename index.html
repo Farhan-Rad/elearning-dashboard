@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>LKPD 11 - Dashboard Media Pembelajaran Interaktif</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+
+/* ===== TEMA ===== */
+:root{
+  --sb-bg: rgba(0,0,0,0.45);
+  --card-bg: rgba(255,255,255,0.15);
+  --card-bg2: rgba(255,255,255,0.1);
+  --text:#fff;
+  --text-muted:rgba(255,255,255,0.7);
+  --acc1:#7f7cff;
+  --acc2:#5ddcff;
+  --btn-grad: linear-gradient(45deg,#7f7cff,#5ddcff);
+  --btn-grad-rev: linear-gradient(45deg,#5ddcff,#7f7cff);
+  --progress-track:rgba(255,255,255,0.2);
+  --body-overlay: rgba(40,20,80,0.7), rgba(20,60,120,0.7);
+}
+
+body.dark-purple{
+  --sb-bg: rgba(30,10,70,0.88);
+  --card-bg: rgba(80,50,150,0.25);
+  --card-bg2: rgba(60,30,120,0.2);
+  --body-overlay: rgba(10,5,30,0.82), rgba(30,10,70,0.82);
+  --btn-grad: linear-gradient(45deg,#4c3a9e,#7f7cff);
+  --btn-grad-rev: linear-gradient(45deg,#7f7cff,#4c3a9e);
+}
+
+body{
+  min-height:100vh;
+  color:var(--text);
+  transition:background .3s;
+}
+
+#bg{
+  position:fixed; inset:0; z-index:-1;
+  background:
+    linear-gradient(var(--body-overlay)),
+    url('https://images.unsplash.com/photo-1529070538774-1843cb3265df');
+  background-size:cover;
+  background-position:center;
+  backdrop-filter:blur(2px);
+  transition:background .4s;
+}
+
+.wrapper{ display:flex; min-height:100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:240px;
+  background:var(--sb-bg);
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  transition:background .3s;
+}
+
+.sidebar h2{ text-align:center; margin-bottom:16px; letter-spacing:1px; font-size:20px; }
+
+.sidebar button{
+  width:100%; padding:11px 14px; border:none; border-radius:30px;
+  background:var(--btn-grad); color:#000; font-weight:bold;
+  cursor:pointer; transition:.3s; text-align:left; font-size:13px;
+}
+
+.sidebar button:hover{ transform:translateX(6px); background:var(--btn-grad-rev); }
+.sidebar button.active-nav{ background:var(--btn-grad-rev); transform:translateX(4px); }
+
+.sidebar .divider{
+  height:0.5px; background:rgba(255,255,255,0.2); margin:8px 0;
+}
+
+.theme-label{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; padding:0 4px; }
+
+.theme-btn{
+  width:100%; padding:9px 14px; border:1px solid rgba(255,255,255,0.25);
+  border-radius:30px; background:transparent; color:#fff; font-size:12px;
+  cursor:pointer; transition:.3s; text-align:left;
+}
+.theme-btn:hover{ background:rgba(255,255,255,0.15); }
+.theme-btn.on{ background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.5); }
+
+/* ===== CONTENT ===== */
+.content{ flex:1; padding:30px 40px; overflow-y:auto; }
+
+.page{ display:none; animation:slideFade .5s ease; }
+.page.active{ display:block; }
+
+@keyframes slideFade{
+  from{ opacity:0; transform:translateY(16px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--card-bg); padding:24px; border-radius:20px;
+  max-width:720px; margin-bottom:18px;
+  border:1px solid rgba(255,255,255,0.15);
+  transition:background .3s;
+}
+
+.card h1{ margin-bottom:14px; font-size:22px; }
+.card h2{ margin-bottom:10px; font-size:18px; }
+.card p{ line-height:1.7; color:var(--text-muted); margin-bottom:8px; }
+.card ul{ margin-left:18px; color:var(--text-muted); line-height:2; }
+
+/* ===== STATS ===== */
+.stats-grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:720px; margin-bottom:18px;
+}
+.stat-box{
+  background:var(--card-bg); border-radius:16px; padding:16px;
+  border:1px solid rgba(255,255,255,0.15); text-align:center;
+}
+.stat-box .val{ font-size:26px; font-weight:bold; color:var(--acc2); }
+.stat-box .lbl{ font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+/* ===== PROGRESS BAR ===== */
+.prog-track{
+  background:var(--progress-track); border-radius:99px; height:11px; margin:8px 0;
+}
+.prog-fill{
+  height:11px; border-radius:99px;
+  background:linear-gradient(90deg,#7f7cff,#5ddcff);
+  transition:width .5s;
+}
+
+/* ===== XP ===== */
+.xp-row{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.xp-num{ font-size:26px; font-weight:bold; color:#5ddcff; }
+.level-pill{
+  background:rgba(127,124,255,0.35); color:#d0cfff;
+  padding:4px 14px; border-radius:99px; font-size:13px; font-weight:bold;
+}
+
+/* ===== BADGE ===== */
+.badge-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.badge-box{
+  background:var(--card-bg2); border-radius:12px; padding:14px; text-align:center;
+  border:1px solid rgba(255,255,255,0.1); font-size:12px; color:var(--text-muted);
+  transition:border .3s, background .3s;
+}
+.badge-box.unlocked{
+  border-color:#7f7cff; background:rgba(127,124,255,0.2); color:#d0cfff;
+}
+.badge-icon{ font-size:26px; display:block; margin-bottom:6px; }
+
+/* ===== MATERI ===== */
+.materi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:720px; }
+.materi-item{
+  background:var(--card-bg2); border-radius:14px; padding:16px;
+  border:1px solid rgba(255,255,255,0.12);
+}
+.materi-item h3{ font-size:14px; margin-bottom:4px; }
+.materi-item p{ font-size:12px; color:var(--text-muted); margin-bottom:10px; }
+
+.tag{
+  font-size:11px; padding:2px 9px; border-radius:99px; margin-left:6px;
+  vertical-align:middle;
+}
+.tag-done{ background:#dcfce7; color:#15803d; }
+.tag-todo{ background:rgba(255,255,255,0.15); color:#ccc; }
+
+/* ===== BUTTONS ===== */
+.btn-act{
+  padding:8px 18px; border:none; border-radius:25px;
+  background:var(--btn-grad); color:#000; font-weight:bold;
+  cursor:pointer; font-size:12px; transition:.3s;
+}
+.btn-act:hover{ background:var(--btn-grad-rev); transform:scale(1.03); }
+.btn-act:disabled{ opacity:.5; cursor:default; transform:none; }
+
+.btn-submit{
+  margin-top:16px; padding:12px 28px; border:none; border-radius:25px;
+  background:#00e676; font-weight:bold; cursor:pointer; font-size:14px; transition:.3s;
+}
+.btn-submit:hover{ background:#1de9b6; }
+
+/* ===== QUIZ ===== */
+.quiz-q{ margin:14px 0 8px; font-weight:bold; font-size:14px; }
+.quiz-opt{
+  display:block; width:100%; text-align:left; padding:10px 16px;
+  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px; margin-bottom:6px; cursor:pointer; color:#fff;
+  font-size:13px; transition:.2s;
+}
+.quiz-opt:hover{ background:rgba(127,124,255,0.3); border-color:#7f7cff; }
+.quiz-opt.correct{ background:rgba(0,200,100,0.25); border-color:#00e676; }
+.quiz-opt.wrong{ background:rgba(220,30,30,0.25); border-color:#ff5252; }
+.result-msg{ font-size:13px; margin-top:8px; color:var(--text-muted); }
+
+/* ===== LEADERBOARD ===== */
+.lb-list{ list-style:none; }
+.lb-list li{
+  display:flex; justify-content:space-between; padding:9px 0;
+  border-bottom:1px solid rgba(255, 255, 255, 0.458); font-size:15px;
+}
+.lb-list li:last-child{ border-bottom:none; }
+
+/* ===== LOGIN ===== */
+.login-wrap{ display:flex; align-items:center; justify-content:center; min-height:480px; }
+.login-card{
+  background:var(--card-bg); border-radius:20px; padding:36px; width:320px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.login-card h2{ margin-bottom:20px; }
+.form-grp{ margin-bottom:14px; }
+.form-grp label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:5px; }
+.form-grp input{
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.08); color:#fff; font-size:13px;
+}
+.form-grp input::placeholder{ color:rgba(255,255,255,0.35); }
+.login-btn{
+  width:100%; padding:12px; border:none; border-radius:25px;
+  background:var(--btn-grad); color:#000; font-weight:bold;
+  cursor:pointer; font-size:14px; margin-top:6px; transition:.3s;
+}
+.login-btn:hover{ background:var(--btn-grad-rev); }
+.login-msg{ font-size:12px; color:#00e676; margin-top:10px; display:none; }
+
+/* ===== VIDEO ===== */
+.video-wrap{
+  border-radius:14px; overflow:hidden; aspect-ratio:16/9;
+  background:rgba(0,0,0,0.4); display:flex; align-items:center;
+  justify-content:center; color:var(--text-muted); font-size:13px;
+  border:1px solid rgba(255,255,255,0.15); max-width:680px;
+}
+
+/* ===== EVALUASI (lama) ===== */
+input[type=text]{
+  width:100%; padding:10px; border-radius:10px; font-size:13px;
+  border:1px solid rgba(255,255,255,0.25); margin:8px 0 14px;
+  background:rgba(255,255,255,0.08); color:#fff;
+}
+input[type=text]::placeholder{ color:rgba(255,255,255,.35); }
+input[type=radio]{ margin-right:6px; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .wrapper{ flex-direction:column; }
+  .sidebar{ width:100%; flex-direction:row; flex-wrap:wrap; gap:6px; padding:14px; }
+  .sidebar h2{ width:100%; text-align:left; }
+  .sidebar button,.theme-btn{ width:auto; flex:1; min-width:120px; }
+  .stats-grid{ grid-template-columns:1fr 1fr; }
+  .materi-grid{ grid-template-columns:1fr; }
+  .badge-grid{ grid-template-columns:1fr 1fr; }
+  .content{ padding:20px; }
+}
+</style>
+</head>
+
+<body>
+<div id="bg"></div>
+<div class="wrapper">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>EduSmart</h2>
+    <button onclick="goto('home',this)">🏠 Beranda</button>
+    <button onclick="goto('materi',this)">📘 Materi</button>
+    <button onclick="goto('kuis',this)">📝 Kuis Interaktif</button>
+    <button onclick="goto('progress',this)">🏆 Progress & Badge</button>
+    <button onclick="goto('evaluasi',this)">📋 Evaluasi</button>
+    <button onclick="goto('login',this)">🔐 Login</button>
+    <button onclick="resetAll()" style="background:rgba(255,80,80,0.6);color:#fff">🔄 Reset</button>
+    <div class="divider"></div>
+    <div class="theme-label">Tema</div>
+    <button class="theme-btn on" id="btn-light" onclick="setTheme('light')">☀️ Terang</button>
+    <button class="theme-btn" id="btn-dark" onclick="setTheme('dark')">🌙 Gelap (ungu)</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- BERANDA -->
+    <div id="home" class="page active">
+      <div class="card">
+        <h1>Selamat Datang 👋</h1>
+        <p>Ini adalah <b>dashboard media pembelajaran interaktif</b> — dikembangkan dari LKPD 8.</p>
+        <p>Topik: <b>Menggambar 2 Dimensi</b></p>
+        <p style="margin-top:10px">Gunakan menu di samping untuk berpindah halaman.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="val">5</div><div class="lbl">Materi</div></div>
+        <div class="stat-box"><div class="val" id="stat-prog">0%</div><div class="lbl">Progress</div></div>
+        <div class="stat-box"><div class="val" id="stat-xp">0</div><div class="lbl">XP</div></div>
+      </div>
+      <div class="card">
+        <h2>Progress Belajar</h2>
+        <div class="prog-track"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+        <p id="prog-label" style="margin-top:6px;font-size:13px">0% selesai</p>
+      </div>
+      <div class="card">
+        <h2>XP & Level</h2>
+        <div class="xp-row">
+          <span class="xp-num" id="xp-num">0 XP</span>
+          <span class="level-pill" id="level-pill">Level 0</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="xp-bar" style="width:0%"></div></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:5px">Setiap 500 XP = naik 1 level</p>
+      </div>
+      <div class="card">
+        <h2>Leaderboard</h2>
+        <ul class="lb-list">
+          <li><span>1. Andi</span><span>1200 XP</span></li>
+          <li><span>2. Budi</span><span>1000 XP</span></li>
+          <li><span>3. Siti</span><span>900 XP</span></li>
+          <li id="my-rank" style="display:none"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- MATERI -->
+    <div id="materi" class="page">
+      <div class="card">
+        <h1>📘 Materi</h1>
+        <p>Selesaikan setiap materi untuk menambah progress dan XP kamu.</p>
+      </div>
+      <div class="materi-grid">
+        <div class="materi-item">
+          <h3>Pengertian Gambar 2D <span class="tag tag-todo" id="m1-tag">Belum</span></h3>
+          <p>Gambar yang hanya memiliki panjang dan lebar.</p>
+          <button class="btn-act" id="m1-btn" onclick="selesaiMateri(1)">Mulai +50XP</button>
+        </div>
+        <div class="materi-item">
+          <h3>Bentuk-Bentuk Dasar <span class="tag tag-todo" id="m2-tag">Belum</span></h3>
+          <p>Persegi, segitiga, lingkaran, trapesium, dll.</p>
+          <button class="btn-act" id="m2-btn" onclick="selesaiMateri(2)">Mulai +50XP</button>
+        </div>
+        <div class="materi-item">
+          <h3>Alat Menggambar <span class="tag tag-todo" id="m3-tag">Belum</span></h3>
+          <p>Pensil, penggaris, jangka, dan perangkat lunak.</p>
+          <button class="btn-act" id="m3-btn" onclick="selesaiMateri(3)">Mulai +50XP</button>
+        </div>
+        <div class="materi-item">
+          <h3>Skala & Proporsi <span class="tag tag-todo" id="m4-tag">Belum</span></h3>
+          <p>Memahami skala dalam menggambar teknik.</p>
+          <button class="btn-act" id="m4-btn" onclick="selesaiMateri(4)">Mulai +50XP</button>
+        </div>
+        <div class="materi-item">
+          <h3>Software Menggambar <span class="tag tag-todo" id="m5-tag">Belum</span></h3>
+          <p>AutoCAD, CorelDraw, Inkscape, Figma.</p>
+          <button class="btn-act" id="m5-btn" onclick="selesaiMateri(5)">Mulai +50XP</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h2>🎬 Video Pembelajaran</h2>
+        <p>Tonton video berikut sebagai referensi tambahan:</p>
+        <div class="video-wrap" style="margin-top:12px">
+          <iframe
+            width="100%" height="100%"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            frameborder="0"
+            allowfullscreen
+            style="border-radius:14px"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- KUIS INTERAKTIF -->
+    <div id="kuis" class="page">
+      <div class="card" id="quiz-card">
+        <h1>📝 Kuis Interaktif</h1>
+        <div id="quiz-body"></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS & BADGE -->
+    <div id="progress" class="page">
+      <div class="card">
+        <h2>🏆 Badge Pencapaian</h2>
+        <p style="margin-bottom:14px">Badge akan terbuka otomatis saat XP mencapai syarat.</p>
+        <div class="badge-grid">
+          <div class="badge-box" id="b1">
+            <span class="badge-icon">★</span>
+            Master Coding
+            <div style="font-size:10px;margin-top:4px;opacity:.7">500 XP</div>
+          </div>
+          <div class="badge-box" id="b2">
+            <span class="badge-icon">✦</span>
+            Rajin Belajar
+            <div style="font-size:10px;margin-top:4px;opacity:.7">1000 XP</div>
+          </div>
+          <div class="badge-box" id="b3">
+            <span class="badge-icon">◆</span>
+            Cepat Selesai
+            <div style="font-size:10px;margin-top:4px;opacity:.7">1500 XP</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Tambah XP Manual</h2>
+        <p style="margin-bottom:12px">Simulasi mengerjakan tugas tambahan:</p>
+        <button class="btn-act" onclick="tambahXP(100)">Kerjakan Tugas (+100 XP)</button>
+      </div>
+      <div class="card">
+        <h2>Ringkasan</h2>
+        <p>XP saat ini: <b id="sum-xp" style="color:#5ddcff">0</b></p>
+        <p>Level: <b id="sum-lv" style="color:#5ddcff">0</b></p>
+        <p>Progress materi: <b id="sum-prog" style="color:#5ddcff">0%</b></p>
+      </div>
+    </div>
+
+    <!-- EVALUASI (dari LKPD 8) -->
+    <div id="evaluasi" class="page">
+      <div class="card">
+        <h1>📋 Evaluasi</h1>
+        <label>Nama Siswa</label>
+        <input type="text" id="nama" placeholder="Masukkan nama kamu">
+
+        <p class="quiz-q">1. Gambar 2 dimensi memiliki …</p>
+        <label><input type="radio" name="q1" value="1"> Panjang dan lebar</label><br>
+        <label><input type="radio" name="q1" value="0"> Panjang, lebar, tinggi</label>
+
+        <p class="quiz-q">2. Yang termasuk gambar 2 dimensi adalah …</p>
+        <label><input type="radio" name="q2" value="1"> Persegi</label><br>
+        <label><input type="radio" name="q2" value="0"> Balok</label>
+
+        <p class="quiz-q">3. Software yang digunakan untuk menggambar 2D adalah …</p>
+        <label><input type="radio" name="q3" value="1"> CorelDraw</label><br>
+        <label><input type="radio" name="q3" value="0"> Microsoft Word</label>
+
+        <br>
+        <button class="btn-submit" onclick="hitungSkor()">Kirim Jawaban</button>
+        <h3 id="hasil" style="margin-top:20px;color:#00e676"></h3>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login" class="page">
+      <div class="login-wrap">
+        <div class="login-card">
+          <h2>🔐 Masuk</h2>
+          <div class="form-grp">
+            <label>Email</label>
+            <input type="email" placeholder="email@sekolah.id">
+          </div>
+          <div class="form-grp">
+            <label>Password</label>
+            <input type="password" placeholder="••••••••">
+          </div>
+          <button class="login-btn" onclick="loginDemo()">Masuk</button>
+          <p class="login-msg" id="login-msg">✅ Login berhasil! Selamat datang.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let xp = parseInt(localStorage.getItem('e11_xp')||'0');
+let prog = parseInt(localStorage.getItem('e11_prog')||'0');
+let done = JSON.parse(localStorage.getItem('e11_done')||'[]');
+let theme = localStorage.getItem('e11_theme')||'light';
+
+// ===== QUIZ DATA =====
+const quizData = [
+  {q:'Gambar 2 dimensi hanya memiliki …',opts:['Panjang dan lebar','Panjang, lebar, tinggi','Volume','Kedalaman'],ans:0},
+  {q:'Contoh gambar 2 dimensi adalah …',opts:['Kubus','Bola','Persegi','Tabung'],ans:2},
+  {q:'Software untuk menggambar 2D yang populer adalah …',opts:['Blender','AutoCAD / CorelDraw','Minecraft','Unity'],ans:1},
+  {q:'Skala 1:100 artinya …',opts:['1 cm di gambar = 100 cm nyata','100 cm di gambar = 1 cm nyata','Tidak ada hubungannya','Gambar diperbesar 100x'],ans:0},
+  {q:'Alat manual untuk membuat lingkaran sempurna adalah …',opts:['Penggaris','Busur derajat','Jangka','Pensil'],ans:2},
+];
+let qIdx=0, qAnswered=false;
+
+// ===== THEME =====
+function setTheme(t){
+  theme=t;
+  localStorage.setItem('e11_theme',t);
+  document.body.classList.toggle('dark-purple', t==='dark');
+  document.getElementById('btn-light').classList.toggle('on', t==='light');
+  document.getElementById('btn-dark').classList.toggle('on', t==='dark');
+}
+
+// ===== NAVIGATION =====
+function goto(pg, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pg).classList.add('active');
+  document.querySelectorAll('.sidebar button').forEach(b=>b.classList.remove('active-nav'));
+  if(el) el.classList.add('active-nav');
+  if(pg==='kuis') renderQuiz();
+}
+
+// ===== XP / PROGRESS =====
+function tambahXP(n){ xp+=n; save(); renderAll(); }
+
+function selesaiMateri(i){
+  if(done.includes(i)) return;
+  done.push(i);
+  prog = Math.min(prog+20, 100);
+  tambahXP(50);
+}
+
+function save(){
+  localStorage.setItem('e11_xp', xp);
+  localStorage.setItem('e11_prog', prog);
+  localStorage.setItem('e11_done', JSON.stringify(done));
+}
+
+function renderAll(){
+  // stat cards
+  document.getElementById('stat-prog').textContent = prog+'%';
+  document.getElementById('stat-xp').textContent = xp;
+  // progress bar
+  document.getElementById('prog-bar').style.width = prog+'%';
+  document.getElementById('prog-label').textContent = prog+'% selesai';
+  // xp bar
+  let lv = Math.floor(xp/500);
+  let xpPct = Math.round(((xp%500)/500)*100);
+  document.getElementById('xp-num').textContent = xp+' XP';
+  document.getElementById('level-pill').textContent = 'Level '+lv;
+  document.getElementById('xp-bar').style.width = Math.min(xpPct,100)+'%';
+  // summary
+  document.getElementById('sum-xp').textContent = xp;
+  document.getElementById('sum-lv').textContent = lv;
+  document.getElementById('sum-prog').textContent = prog+'%';
+  // leaderboard
+  let r = document.getElementById('my-rank');
+  if(xp>0){ r.style.display=''; r.innerHTML='<span>Kamu</span><span>'+xp+' XP</span>'; }
+  // badges
+  [['b1',500],['b2',1000],['b3',1500]].forEach(([id,req])=>{
+    document.getElementById(id).classList.toggle('unlocked', xp>=req);
+  });
+  // materi tags & buttons
+  for(let i=1;i<=5;i++){
+    let isDone = done.includes(i);
+    let tag = document.getElementById('m'+i+'-tag');
+    let btn = document.getElementById('m'+i+'-btn');
+    if(tag){ tag.textContent=isDone?'Selesai':'Belum'; tag.className='tag '+(isDone?'tag-done':'tag-todo'); }
+    if(btn){ btn.disabled=isDone; btn.textContent=isDone?'Selesai':'Mulai +50XP'; }
+  }
+}
+
+// ===== QUIZ =====
+function renderQuiz(){
+  if(qIdx >= quizData.length){
+    document.getElementById('quiz-body').innerHTML =
+      '<p style="color:#00e676;font-size:15px">Semua soal sudah selesai! +'+quizData.length*100+' XP total.</p>'+
+      '<button class="btn-act" style="margin-top:12px" onclick="resetQuiz()">Ulangi Kuis</button>';
+    return;
+  }
+  let q = quizData[qIdx];
+  let html = '<p style="font-size:12px;color:var(--text-muted)">Soal '+(qIdx+1)+' dari '+quizData.length+'</p>';
+  html += '<p class="quiz-q">'+q.q+'</p>';
+  q.opts.forEach((o,i)=>{
+    html += '<button class="quiz-opt" id="qopt'+i+'" onclick="pilih('+i+')">'+o+'</button>';
+  });
+  html += '<p class="result-msg" id="qmsg"></p>';
+  if(qIdx < quizData.length-1)
+    html += '<button class="btn-act" style="margin-top:10px;display:none" id="qnext" onclick="nextQ()">Soal berikutnya &rarr;</button>';
+  document.getElementById('quiz-body').innerHTML = html;
+  qAnswered = false;
+}
+
+function pilih(i){
+  if(qAnswered) return;
+  qAnswered = true;
+  let q = quizData[qIdx];
+  let el = document.getElementById('qopt'+i);
+  let msg = document.getElementById('qmsg');
+  if(i===q.ans){
+    el.classList.add('correct');
+    msg.textContent = 'Benar! +100 XP';
+    msg.style.color = '#00e676';
+    tambahXP(100);
+  } else {
+    el.classList.add('wrong');
+    document.getElementById('qopt'+q.ans).classList.add('correct');
+    msg.textContent = 'Salah. Jawaban yang benar sudah ditandai.';
+    msg.style.color = '#ff5252';
+  }
+  let nb = document.getElementById('qnext');
+  if(nb) nb.style.display='';
+}
+
+function nextQ(){ qIdx++; renderQuiz(); }
+
+function resetQuiz(){ qIdx=0; qAnswered=false; renderQuiz(); }
+
+// ===== EVALUASI (LKPD 8) =====
+function hitungSkor(){
+  const nama = document.getElementById('nama').value.trim();
+  if(!nama){ alert('Nama tidak boleh kosong!'); return; }
+  const q1 = document.querySelector('input[name="q1"]:checked');
+  const q2 = document.querySelector('input[name="q2"]:checked');
+  const q3 = document.querySelector('input[name="q3"]:checked');
+  if(!q1||!q2||!q3){ alert('Semua soal wajib dijawab!'); return; }
+  let s = (parseInt(q1.value)+parseInt(q2.value)+parseInt(q3.value)) * 33;
+  document.getElementById('hasil').textContent = 'Nama: '+nama+' | Skor: '+s;
+  tambahXP(s);
+}
+
+// ===== LOGIN =====
+function loginDemo(){
+  document.getElementById('login-msg').style.display='block';
+}
+
+// ===== RESET =====
+function resetAll(){
+  localStorage.removeItem('e11_xp');
+  localStorage.removeItem('e11_prog');
+  localStorage.removeItem('e11_done');
+  location.reload();
+}
+
+// ===== INIT =====
+setTheme(theme);
+renderAll();
+</script>
+</body>
+</html>
